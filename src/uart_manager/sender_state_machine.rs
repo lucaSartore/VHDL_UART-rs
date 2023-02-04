@@ -1,12 +1,17 @@
 use std::marker::PhantomData;
 use serialport::{SerialPort};
-use std::io::{Error, Read};
-
+use std::io::{Error, ErrorKind, Read};
+use std::time::Duration;
+use std::thread;
 
 pub enum SendResult<'a>{
+    /// the message has been received successfully
     SendSuccessful(SenderStateMachine<'a>),
+    /// the message has not been received successfully
     SendNonSuccessful(SenderStateMachine<'a>),
+    /// the message has been received successfully, and we reached the end of the data to send
     SendCompleted(),
+    /// an error has occurred
     Error(Error)
 }
 
@@ -28,15 +33,25 @@ impl<'a> SenderStateMachine<'a>{
 }
 
 impl <'a> SenderStateMachine<'a>{
+
+    /// send 9 bytes, and then the checksum the return valie
+    ///
     pub fn send_data(mut self) -> SendResult<'a>{
+
+        let time_to_sleep = Duration::from_micros(super::TIME_BETWEEN_BYTE_US);
+
         let mut checksum = 0 as u8;
 
-        for i in 0..=9{
+        println!("starting sending {}/{}",self.index,self.data.len());
 
-            let byte_to_send = self.get_u8(self.index + i as usize);
+        // snd 9 bytes
+        for i in 0..9{
+
+            let byte_to_send = self.get_u8(self.index + i*8 as usize);
 
             let byte_to_send = match byte_to_send {
                 Option::Some(b) => b,
+                // in the case we have reached the end of the array before the 9 bytes we end
                 Option::None => break,
             };
 
@@ -44,31 +59,55 @@ impl <'a> SenderStateMachine<'a>{
 
             let result = self.port.write(&[byte_to_send]);
             match result {
-                Result::Ok(_) => (),
+                Result::Ok(_) => println!("send: {}",byte_to_send),
                 Result::Err(e) => return SendResult::Error(e),
             }
+
+            thread::sleep(time_to_sleep)
+
         }
 
+
+        // send the checksum
         let result = self.port.write(&[checksum]);
         match result {
-            Result::Ok(_) => (),
+            Result::Ok(_) => println!("send checksum: {}",checksum),
             Result::Err(e) => return SendResult::Error(e),
         }
 
-        let result_bytes = 0 as u8;
+        thread::sleep(time_to_sleep);
 
-        let result = self.port.read(&mut [result_bytes]);
+        let mut result_bytes_vec:Vec<u8> = vec![0;1];
+
+        println!("reading reply");
+
+        if self.port.bytes_to_read().unwrap() != 1{
+            thread::sleep(Duration::from_millis(2));
+            if self.port.bytes_to_read().unwrap() != 1{
+                panic!("bo...");
+            }
+        }
+        println!("bytes_to_read: {:?}",self.port.bytes_to_read());
+
+        // read the result
+        let result = self.port.read_exact(result_bytes_vec.as_mut_slice());
         match result {
             Result::Ok(_) => (),
-            Result::Err(e) => return SendResult::Error(e),
+            Result::Err(e) => {
+                println!("error in reply: {:?}",e);
+                return SendResult::Error(e);
+            }
         }
+        let result_bytes = result_bytes_vec[0];
+
+        println!("received ACK: {}",result_bytes);
 
         // datas delivered correctly
-        if result_bytes.count_ones() >= 4{
+        if result_bytes.count_ones() >= 3{
 
             println!("checksum was correct!");
 
-            self.index += 8;
+            self.index += 8*9;
 
             if self.index >= self.data.len(){
                 SendResult::SendCompleted()
@@ -95,6 +134,7 @@ impl <'a> SenderStateMachine<'a>{
             )
         }
 
+
     }
 
     /// return the next 8 bits to send, return none if pick_from is >= than the length of the array
@@ -104,7 +144,7 @@ impl <'a> SenderStateMachine<'a>{
             return Option::None
         }
 
-        let pick_to = self.data.len().min(pick_from+1)-1;
+        let pick_to = self.data.len().min(pick_from+8)-1;
 
         let slice = &self.data[pick_from..pick_to];
 
