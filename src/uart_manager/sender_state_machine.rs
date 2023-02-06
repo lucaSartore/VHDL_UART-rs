@@ -1,11 +1,8 @@
-use std::fmt::format;
-use std::marker::PhantomData;
 use serialport::{SerialPort};
 use std::io::{Error, ErrorKind, Read};
 use std::io::ErrorKind::TimedOut;
 use std::time::{Duration, Instant};
 use std::thread;
-use crate::uart_manager::receiver_state_machine::ReceiveResult;
 
 pub enum SendResult<'a>{
     /// the message has been received successfully

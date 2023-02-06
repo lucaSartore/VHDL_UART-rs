@@ -1,6 +1,5 @@
 use std::io::{Error, ErrorKind, Read, Write};
 use std::io::ErrorKind::TimedOut;
-use std::ops::BitAndAssign;
 use std::time::{Duration, Instant};
 use serialport::SerialPort;
 
@@ -39,10 +38,10 @@ impl<'a>  ReceiveStateMachine<'a> {
     pub fn receive(mut self) -> ReceiveResult<'a>{
 
         // calculate how many byres i have to recive
-        let mut remaining_bytes = ((self.data.len()-self.index) as f32 / 8.).ceil() as usize;
+        let remaining_bytes = ((self.data.len()-self.index) as f32 / 8.).ceil() as usize;
 
         // calculate how many byres i have to receive
-        let mut byte_to_receive = 9.min(remaining_bytes);
+        let byte_to_receive = 9.min(remaining_bytes);
 
         println!("byte_to_receive: {}",byte_to_receive);
 
@@ -156,9 +155,9 @@ impl<'a>  ReceiveStateMachine<'a> {
 
         let len = self.data.len();
 
-        let mut c = 0;
+        //let mut c = 0;
         while self.index < len  {
-            c+=1;
+            //c+=1;
             // insert one bit
             self.data[self.index] = mask & new_value != 0;
 
