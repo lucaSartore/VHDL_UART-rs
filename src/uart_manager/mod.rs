@@ -1,11 +1,14 @@
 use std::io::{Read, Write};
 use std::marker::PhantomData;
-use std::thread;
+use std::{thread, time};
 use std::time::Duration;
+use rand::Rng;
 use serialport::{Error, SerialPort, StopBits};
 use crate::uart_manager::sender_state_machine::{SenderStateMachine, SendResult};
+use crate::uart_manager::receiver_state_machine::{ReceiveStateMachine,ReceiveResult};
 
 mod sender_state_machine;
+mod receiver_state_machine;
 
 /// the baud rate of the sender
 const BAUD_RATE: u32 = 9600;
@@ -17,6 +20,8 @@ const MAX_ALLOWED_FAILS: u32 = 5;
 const TIMEOUT_US: u64 = 300;
 /// the time between a byte and an other to let the state machine do his job
 const TIME_BETWEEN_BYTE_US: u64 = 300;
+/// the time the state machines wait for a reply after witch a time out get called
+const WAITING_TO_RECEIVE_TIMEOUT_US: u64= 100_000;
 
 
 pub struct UartManager{
@@ -91,8 +96,8 @@ impl UartManager{
                     println!("SendCompleted");
                     break
                 }
-                SendResult::Error(_) => {
-                    println!("Error");
+                SendResult::Error(e) => {
+                    println!("Error: {:?}",e);
                     return Result::Err(());
                 }
             };
@@ -100,14 +105,96 @@ impl UartManager{
         }
         return Result::Ok(());
     }
+
+
+    /// read the data to fill the vector
+    pub fn receive_data(&mut self, data: &mut Vec<bool>) -> Result<(),()>{
+
+        let mut sm = ReceiveStateMachine::new(data, &mut self.port);
+
+        let mut count_error = 0;
+
+        loop {
+            sm = match sm.receive() {
+                ReceiveResult::ReceiveNonSuccessful(sm) => {
+                    count_error += 1;
+                    if count_error > MAX_ALLOWED_FAILS{
+                        println!("too many consecutive errors has occur!");
+                        return  Err(());
+                    }
+                    sm
+                }
+                ReceiveResult::ReceiveSuccessful(sm) => {
+                    count_error = 0;
+                    sm
+                }
+                ReceiveResult::ReceiveCompleted() => {
+                    return Result::Ok(());
+                }
+                ReceiveResult::Error(e) => {
+                    println!("Got error: {:?}",e);
+                    return  Err(());
+                }
+
+
+            }
+        }
+
+    }
 }
+
+
+#[test]
+fn test_round_trip(){
+
+    const BIT_TO_SEND: usize = 91;
+
+    fn get_rand() -> bool{
+        let random_bool: bool = rand::thread_rng().gen();
+        random_bool
+    }
+
+    let mut data_in = Vec::new();
+    let mut data_out = vec![false;BIT_TO_SEND];
+
+
+    for i in 0..BIT_TO_SEND{
+        data_in.push(get_rand());
+        //data_in.push(i%2 == 0);
+    }
+
+    println!("DATA_IN: {:?}",data_in);
+
+    let mut manager = UartManager::new("COM5").unwrap();
+
+    let _ = manager.send_data(&data_in).unwrap();
+
+    let _ = manager.receive_data(&mut data_out).unwrap();
+
+
+    println!("DATA_IN: {:?}",data_in);
+    println!("DATA_OUT: {:?}",data_out);
+    assert_eq!(data_out,data_in);
+
+}
+
+#[test]
+fn test_loop(){
+
+    for i in 0..1000{
+        test_round_trip();
+        thread::sleep(Duration::from_millis(10));
+    }
+
+}
+
 
 #[test]
 fn test_sender(){
 
     let mut manager = UartManager::new("COM5").unwrap();
-
     let r = manager.send_data(&vec![false,false,false,true,true,true]);
+
 
 }
 
@@ -156,7 +243,7 @@ fn test_with_on_board_checksum(){
 
     let mut data = Vec::<bool>::new();
 
-    for i in 0..200{
+    for i in 0..72{
         data.push(get_rand())
     }
 
@@ -166,6 +253,22 @@ fn test_with_on_board_checksum(){
     let r = manager.send_data(&data).unwrap();
 
     println!("r: {:?}",r);
+
+    while manager.port.bytes_to_read().unwrap() != 10{
+
+    }
+
+    let btr =manager.port.bytes_to_read().unwrap() as usize;
+
+    println!("to read: {btr}");
+
+    let mut serial_buf: Vec<u8> = vec![0; btr];
+    let result = manager.port.read_exact(serial_buf.as_mut_slice());
+    println!("Result: {serial_buf:?}");
+
+    println!("result {:?}",result);
+
+    assert_eq!(serial_buf[btr-1],cs)
 
 }
 
@@ -244,6 +347,8 @@ fn test_manual(){
 
     println!("{:?}",port.write(&[72]));
     thread::sleep(time);
+
+
 
     let mut v = vec![0,1];
     // read the result

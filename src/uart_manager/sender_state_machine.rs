@@ -1,8 +1,11 @@
+use std::fmt::format;
 use std::marker::PhantomData;
 use serialport::{SerialPort};
 use std::io::{Error, ErrorKind, Read};
-use std::time::Duration;
+use std::io::ErrorKind::TimedOut;
+use std::time::{Duration, Instant};
 use std::thread;
+use crate::uart_manager::receiver_state_machine::ReceiveResult;
 
 pub enum SendResult<'a>{
     /// the message has been received successfully
@@ -75,19 +78,45 @@ impl <'a> SenderStateMachine<'a>{
             Result::Err(e) => return SendResult::Error(e),
         }
 
-        thread::sleep(time_to_sleep);
-
-        let mut result_bytes_vec:Vec<u8> = vec![0;1];
-
         println!("reading reply");
 
-        if self.port.bytes_to_read().unwrap() != 1{
-            thread::sleep(Duration::from_millis(2));
-            if self.port.bytes_to_read().unwrap() != 1{
-                panic!("bo...");
+
+        // thread::sleep(time_to_sleep);
+        //
+        // thread::sleep(Duration::from_millis(30));
+        //
+        // let mut to_read = match self.port.bytes_to_read(){
+        //     Result::Ok(v) => v,
+        //     Result::Err(e) => return SendResult::Error(Error::new(ErrorKind::Other,format!{"{:?}",e}))
+        // };
+        // if to_read == 0{
+        //     thread::sleep(Duration::from_millis(3));
+        //     to_read = match self.port.bytes_to_read(){
+        //         Result::Ok(v) => v,
+        //         Result::Err(e) => return SendResult::Error(Error::new(ErrorKind::Other,format!{"{:?}",e}))
+        //     };
+        // }
+        // if to_read == 0{
+        //     return SendResult::Error(Error::new(ErrorKind::TimedOut,"ACK didn't arrive"))
+        // }
+        // println!("bytes_to_read: {:?}",to_read);
+
+        let in_time = Instant::now();
+        let time_out = Duration::from_micros(super::WAITING_TO_RECEIVE_TIMEOUT_US);
+        // i wait until all the data are in the port
+        while match self.get_bytes_to_read() {
+            Ok(r) => r,
+            Err(e) => return SendResult::Error(e)
+        } == 0{
+
+            if Instant::now() - in_time > time_out{
+                println!("stop waiting after {:?}", Instant::now() - in_time );
+                return SendResult::Error(Error::new(TimedOut,"the board wasn't sending the data"))
             }
+
         }
-        println!("bytes_to_read: {:?}",self.port.bytes_to_read());
+
+        let mut result_bytes_vec:Vec<u8> = vec![0;1];
 
         // read the result
         let result = self.port.read_exact(result_bytes_vec.as_mut_slice());
@@ -144,7 +173,7 @@ impl <'a> SenderStateMachine<'a>{
             return Option::None
         }
 
-        let pick_to = self.data.len().min(pick_from+8)-1;
+        let pick_to = self.data.len().min(pick_from+8);
 
         let slice = &self.data[pick_from..pick_to];
 
@@ -156,4 +185,27 @@ impl <'a> SenderStateMachine<'a>{
         }
         Option::Some(result)
     }
+
+    fn get_bytes_to_read(&mut self) -> Result<u32,Error>{
+
+        match self.port.bytes_to_read() {
+            Result::Ok(btr) => Result::Ok(btr),
+            Result::Err(e) => Result::Err(Error::new(ErrorKind::Other, format!("{e:?}")))
+        }
+
+    }
 }
+
+/*
+#[test]
+fn aaaaa(){
+    for i in 0..255 as u8{
+
+        if i.count_ones() > 3{
+            println!("when \"{:08b}\" => state <= ACK;",i)
+        }else{
+            println!("when \"{:08b}\" => state <= NACK;",i)
+        }
+
+    }
+}*/
