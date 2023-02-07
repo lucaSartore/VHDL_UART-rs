@@ -8,7 +8,7 @@ use crate::communicate_to_vhdl::Vhdlizable;
 
 
 #[proc_macro_derive(Vhdlizable)]
-pub fn derive_heap_size(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+fn derive_heap_size(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
     // Parse the input tokens into a syntax tree.
     let input = parse_macro_input!(input as DeriveInput);
