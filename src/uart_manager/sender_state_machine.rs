@@ -192,17 +192,3 @@ impl <'a> SenderStateMachine<'a>{
 
     }
 }
-
-/*
-#[test]
-fn aaaaa(){
-    for i in 0..255 as u8{
-
-        if i.count_ones() > 3{
-            println!("when \"{:08b}\" => state <= ACK;",i)
-        }else{
-            println!("when \"{:08b}\" => state <= NACK;",i)
-        }
-
-    }
-}*/
