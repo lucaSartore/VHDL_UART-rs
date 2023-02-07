@@ -1,7 +1,8 @@
 use std::thread;
 use std::time::Duration;
 use rand::Rng;
-use serialport::{Error, SerialPort};
+use serialport::SerialPort;
+use std::io::{Error,ErrorKind};
 use crate::uart_manager::sender_state_machine::{SenderStateMachine, SendResult};
 use crate::uart_manager::receiver_state_machine::{ReceiveStateMachine,ReceiveResult};
 
@@ -41,7 +42,7 @@ impl UartManager{
 
         let port = match port.open() {
             Result::Ok(p) => p,
-            Result::Err(e) => return Result::Err(e)
+            Result::Err(e) => return Result::Err(Error::new(ErrorKind::Other, format!("{e:?}")))
         };
 
         Result::Ok(
@@ -65,7 +66,7 @@ impl UartManager{
 
 
     /// send to the board a set of data,
-    pub fn send_data(&mut self, data: &Vec<bool>) -> Result<(),()>{
+    pub fn send_data(&mut self, data: &Vec<bool>) -> Result<(),Error>{
 
         let mut sender = SenderStateMachine::new(data, &mut self.port);
 
@@ -82,7 +83,7 @@ impl UartManager{
                     println!("SendNonSuccessful");
                     fail_counter += 1;
                     if fail_counter >= MAX_ALLOWED_FAILS{
-                        return Result::Err(());
+                        return Result::Err(Error::new(ErrorKind::Other, "too many consecutive errors has occur!"));
                     }
                     sender
                 }
@@ -92,7 +93,7 @@ impl UartManager{
                 }
                 SendResult::Error(e) => {
                     println!("Error: {:?}",e);
-                    return Result::Err(());
+                    return Result::Err(e);
                 }
             };
             thread::sleep(Duration::from_millis(TIME_BETWEEN_BYTE_US));
@@ -102,7 +103,7 @@ impl UartManager{
 
 
     /// read the data to fill the vector
-    pub fn receive_data(&mut self, data: &mut Vec<bool>) -> Result<(),()>{
+    pub fn receive_data(&mut self, data: &mut Vec<bool>) -> Result<(),Error>{
 
         let mut sm = ReceiveStateMachine::new(data, &mut self.port);
 
@@ -113,8 +114,7 @@ impl UartManager{
                 ReceiveResult::ReceiveNonSuccessful(sm) => {
                     count_error += 1;
                     if count_error > MAX_ALLOWED_FAILS{
-                        println!("too many consecutive errors has occur!");
-                        return  Err(());
+                        return Result::Err(Error::new(ErrorKind::Other, "too many consecutive errors has occur!"));
                     }
                     sm
                 }
@@ -126,8 +126,7 @@ impl UartManager{
                     return Result::Ok(());
                 }
                 ReceiveResult::Error(e) => {
-                    println!("Got error: {:?}",e);
-                    return  Err(());
+                    return  Err(e);
                 }
 
 

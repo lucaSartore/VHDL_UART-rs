@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::Write;
 
 /// generate a VHDL code that can receive the data, decompose them and send them back
-fn generate_vhd_communicator(
+pub fn generate_vhd_communicator(
     number_of_bit_in: usize,
     number_of_bit_out: usize,
     declaration_code_input: String,
@@ -12,7 +12,7 @@ fn generate_vhd_communicator(
 ) -> Result<(),std::io::Error>{
 
     let s = format!(
-"
+        "
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.numeric_std .ALL;

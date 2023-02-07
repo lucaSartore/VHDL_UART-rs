@@ -1,3 +1,4 @@
+use std::io::{Error, ErrorKind};
 use super::Vhdlizable;
 
 impl Vhdlizable for i32{
@@ -28,25 +29,24 @@ impl Vhdlizable for i32{
 
     }
 
-    fn construct_from_bits(&mut self,v: &Vec<bool>) -> Result<(),()> {
+    fn construct_from_bits(v: &Vec<bool>) -> Result<Self,Error> {
         if v.len() != 32{
-            return Err(());
+            return Err(Error::new(ErrorKind::Other, "Length of input incompatible with length of output"));
         };
 
-
-        *self = 0;
+        let mut ret = 0;
 
         for (i,n) in v.iter().enumerate(){
             if *n {
-                *self += 2_i32.pow(i as u32);
+                ret += 2_i32.pow(i as u32);
             }
         }
 
-        Ok(())
+        Ok(ret)
     }
 
     fn get_vhd_construction_code(variable_name: &str, start_index: usize) -> String {
-        format!("{variable_name} <= data_in({} downto {start_index});",start_index+31)
+        format!("{variable_name} <= signed(data_in({} downto {start_index}));",start_index+31)
     }
 
     fn get_vhd_declaration_code(variable_name: &str) -> String {

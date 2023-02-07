@@ -6,4 +6,4 @@ pub mod uart_manager;
 
 /// the trait for object that can be send to the boatd
 #[allow(dead_code)]
-pub mod traits;
+pub mod communicate_to_vhdl;
