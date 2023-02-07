@@ -1,4 +1,5 @@
 use std::io::{Error, ErrorKind};
+use crate::communicate_to_vhdl::Communicator;
 use super::Vhdlizable;
 
 impl Vhdlizable for i32{
@@ -79,5 +80,46 @@ fn test_stringify(){
     let prova = 5;
 
     prova.print();
+
+}
+
+#[test]
+fn middle_point_test(){
+
+    #[derive(Vhdlizable,Debug)]
+    struct Point{
+        x: i32,
+        y: i32
+    }
+    impl Point{
+        fn new(x: i32,y: i32) -> Self{
+            Point{
+                x,
+                y
+            }
+        }
+    }
+
+    #[derive(Vhdlizable,Debug)]
+    struct Rectangle{
+        p1: Point,
+        p2: Point,
+    }
+
+    let rectangle = Rectangle{
+        p1: Point::new(0,0),
+        p2: Point::new(10,4)
+    };
+
+
+    //Communicator::<Rectangle,Point>::generate_vhdl_code();
+    //return;
+
+    let mut calcolate_middle_point = Communicator::<Rectangle,Point>::new_from_serial_port("COM5").unwrap();
+
+    let middle_point = calcolate_middle_point.calculate(rectangle).unwrap();
+
+    println!("the middle point of the rectange  is {:?}",middle_point)
+
 
 }
