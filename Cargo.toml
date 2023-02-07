@@ -7,4 +7,5 @@ edition = "2021"
 serialport = "4.2.0"
 rand = "0.8.5"
 derivable_crate = { path = "derivable_crate/derivable_crate" }
+num-traits = "0.2.15"
 
