@@ -4,6 +4,8 @@ use crate::uart_manager::UartManager;
 
 pub mod implementations;
 
+pub mod derive_macro;
+
 mod functions;
 
 
