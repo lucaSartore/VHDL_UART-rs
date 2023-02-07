@@ -29,32 +29,35 @@ impl Vhdlizable for i32{
 
     }
 
-    fn construct_from_bits(v: &Vec<bool>) -> Result<Self,Error> {
+    fn construct_from_bits(v: &[bool]) -> Result<Self,Error> {
         if v.len() != 32{
             return Err(Error::new(ErrorKind::Other, "Length of input incompatible with length of output"));
         };
 
         let mut ret = 0;
 
+        let mut mask = 1;
+
         for (i,n) in v.iter().enumerate(){
             if *n {
-                ret += 2_i32.pow(i as u32);
+                ret |= mask;
             }
+            mask <<= 1;
         }
 
         Ok(ret)
     }
 
     fn get_vhd_construction_code(variable_name: &str, start_index: usize) -> String {
-        format!("{variable_name} <= signed(data_in({} downto {start_index}));",start_index+31)
+        format!("{variable_name} <= signed(data_in({} downto {start_index}));\n",start_index+31)
     }
 
     fn get_vhd_declaration_code(variable_name: &str) -> String {
-        format!("signal {variable_name}: signed(31 downto 0);")
+        format!("signal {variable_name}: signed(31 downto 0);\n")
     }
 
     fn get_vhd_deconstruction_code(variable_name: &str, start_index: usize) -> String {
-        format!("data_out({} downto {start_index}) <= std_logic_vector({variable_name});",start_index+31)
+        format!("data_out({} downto {start_index}) <= std_logic_vector({variable_name});\n",start_index+31)
     }
 }
 
@@ -75,9 +78,6 @@ fn test_stringify(){
 
     let prova = 5;
 
-    prova.print()
-
-
-
+    prova.print();
 
 }

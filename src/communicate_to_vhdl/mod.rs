@@ -4,10 +4,9 @@ use crate::uart_manager::UartManager;
 
 pub mod implementations;
 
-pub mod derive_macro;
-
 mod functions;
 
+pub use derivable_crate::*;
 
 /// a trait for all the object that can be transformed in a vhdl object
 pub trait Vhdlizable{
@@ -25,7 +24,7 @@ pub trait Vhdlizable{
     fn get_bit_representation(&self) -> Vec<bool>;
 
     /// reconstruct the current item with the given data
-    fn construct_from_bits(data: &Vec<bool>) -> Result<Self,Error> where Self: Sized;
+    fn construct_from_bits(data: &[bool]) -> Result<Self,Error> where Self: Sized;
 
     /// return a string containing the VHDL code to construct the items
     ///
