@@ -21,10 +21,10 @@ fn middle_point_test(){
     #[derive(Vhdlizable,Debug)]
     struct Point{
         x: i32,
-        y: i32
+        y: u32
     }
     impl Point{
-        fn new(x: i32,y: i32) -> Self{
+        fn new(x: i32,y: u32) -> Self{
             Point{
                 x,
                 y
@@ -43,6 +43,9 @@ fn middle_point_test(){
         p2: Point::new(10,4)
     };
 
+    //println!("{:?}",3_u8.get_bit_representation());
+
+    //println!("{:?}",rectangle.get_bit_representation());
 
     //Communicator::<Rectangle,Point>::generate_vhdl_code();
 
@@ -50,7 +53,7 @@ fn middle_point_test(){
 
     let middle_point = calcolate_middle_point.calculate(&rectangle).unwrap();
 
-    //println!("the middle point of the rectange {:?} is {:?}",rectangle,middle_point)
+    println!("the middle point of the rectange {:?} is {:?}",rectangle,middle_point)
 
 
 }

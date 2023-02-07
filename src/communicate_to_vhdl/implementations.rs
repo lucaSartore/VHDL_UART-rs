@@ -5,7 +5,7 @@ use num_traits::PrimInt;
 
 
 
-impl<T: PrimInt + SignedDetector> Vhdlizable for T{
+impl<T: PrimInt + SignedDetector + std::fmt::Display> Vhdlizable for T{
     fn get_necessary_bits() -> usize {
         std::mem::size_of::<T>()*8
     }
@@ -19,15 +19,16 @@ impl<T: PrimInt + SignedDetector> Vhdlizable for T{
         // just converting the number to binary
         loop {
             v.push(
-                mask&*self != T::zero()
+                mask&(*self) != T::zero()
             );
+
 
             mask = mask.rotate_left(1);
 
-            if mask == T::zero(){
+
+            if mask == T::one(){
                 break
             }
-
         }
         v
 
@@ -155,21 +156,21 @@ impl SignedDetector for usize {
 
 
 #[test]
-fn test_stringify(){
+fn test(){
 
-    trait DebugPus{
-        fn print(&self){
-        }
+    use num_traits::PrimInt;
+
+    let n = 0xF00Du16;
+
+    fn print_second_bit<T: PrimInt>(dato: T){
+
+        let mask = T::one().rotate_left(1);
+
+        println!("{}",mask&dato != T::zero())
+
     }
 
-    impl DebugPus for i32{
-        fn print(&self) {
-            println!("the variable: {} has value: {}",stringify!(*self),*self)
-        }
-    }
+    print_second_bit(10);
 
-    let prova = 5;
-
-    prova.print();
 
 }
