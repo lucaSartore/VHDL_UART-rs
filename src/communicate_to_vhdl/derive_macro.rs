@@ -6,11 +6,6 @@ use syn::{
 };
 use crate::communicate_to_vhdl::Vhdlizable;
 
-#[derive(Vhdlizable)]
-struct Point{
-    x: i32,
-    y: i32
-}
 
 #[proc_macro_derive(Vhdlizable)]
 pub fn derive_heap_size(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
