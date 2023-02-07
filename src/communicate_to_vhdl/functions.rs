@@ -78,7 +78,7 @@ begin
 
     transmeater: entity work.SafeTransmeater
         Generic map(
-            RECIVING_SIZE =>  RECIVING_SIZE
+            RECIVING_SIZE =>  SENDING_SIZE
         )
         port map(
           CLK => CLK,

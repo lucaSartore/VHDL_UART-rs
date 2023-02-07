@@ -6,6 +6,7 @@ pub mod implementations;
 
 mod functions;
 
+pub use derivable_crate::*;
 
 /// a trait for all the object that can be transformed in a vhdl object
 pub trait Vhdlizable{
@@ -23,7 +24,7 @@ pub trait Vhdlizable{
     fn get_bit_representation(&self) -> Vec<bool>;
 
     /// reconstruct the current item with the given data
-    fn construct_from_bits(data: &Vec<bool>) -> Result<Self,Error> where Self: Sized;
+    fn construct_from_bits(data: &[bool]) -> Result<Self,Error> where Self: Sized;
 
     /// return a string containing the VHDL code to construct the items
     ///
@@ -115,7 +116,7 @@ impl<TypeIn: Vhdlizable, TypeOut: Vhdlizable> Communicator<TypeIn,TypeOut>{
     }
 
     /// calculate some data on the vhdl board
-    pub fn calculate(&mut self, input: TypeIn) -> Result<TypeOut,Error>{
+    pub fn calculate(&mut self, input: &TypeIn) -> Result<TypeOut,Error>{
 
         let data_to_send = input.get_bit_representation();
 
