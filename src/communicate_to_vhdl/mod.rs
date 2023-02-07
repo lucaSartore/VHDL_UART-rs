@@ -114,6 +114,7 @@ impl<TypeIn: Vhdlizable, TypeOut: Vhdlizable> Communicator<TypeIn,TypeOut>{
         Result::Ok(())
     }
 
+    /// calculate some data on the vhdl board
     pub fn calculate(&mut self, input: TypeIn) -> Result<TypeOut,Error>{
 
         let data_to_send = input.get_bit_representation();
