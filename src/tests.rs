@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+#[allow(unused_imports)]
 use crate::communicate_to_vhdl::{Communicator,Vhdlizable};
 
 #[test]
@@ -16,15 +18,28 @@ fn plus_one_test(){
 }
 
 #[test]
-fn middle_point_test(){
+#[allow(dead_code)]
+fn rectangel_test(){
 
-    #[derive(Vhdlizable,Debug)]
+    #[derive(Vhdlizable,Debug,PartialEq)]
+    struct Color{
+        r: u8,
+        g: u8,
+        b: u8
+    }
+    impl Color{
+        pub fn new(r: u8,g: u8, b: u8) -> Self{
+            Color{r,g,b}
+        }
+    }
+
+    #[derive(Vhdlizable,Debug,PartialEq)]
     struct Point{
         x: i32,
-        y: u32
+        y: i32
     }
     impl Point{
-        fn new(x: i32,y: u32) -> Self{
+        fn new(x: i32,y: i32) -> Self{
             Point{
                 x,
                 y
@@ -32,28 +47,31 @@ fn middle_point_test(){
         }
     }
 
-    #[derive(Vhdlizable,Debug)]
+    #[derive(Vhdlizable,Debug,PartialEq)]
     struct Rectangle{
         p1: Point,
         p2: Point,
+        color: Color
     }
 
     let rectangle = Rectangle{
-        p1: Point::new(0,0),
-        p2: Point::new(10,4)
+        p1: Point::new(-245235245,-3),
+        p2: Point::new(10,3223223),
+        color: Color::new(0,32,255)
     };
 
-    //println!("{:?}",3_u8.get_bit_representation());
 
-    //println!("{:?}",rectangle.get_bit_representation());
+    // Communicator::<Rectangle,Rectangle>::generate_vhdl_code().unwrap();
+    // return;
 
-    //Communicator::<Rectangle,Point>::generate_vhdl_code();
+    let mut clone_rectangle = Communicator::<Rectangle,Rectangle>::new_from_serial_port("COM5").unwrap();
 
-    let mut calcolate_middle_point = Communicator::<Rectangle,Point>::new_from_serial_port("COM5").unwrap();
+    let new_rectangle = clone_rectangle.calculate(&rectangle).unwrap();
 
-    let middle_point = calcolate_middle_point.calculate(&rectangle).unwrap();
-
-    println!("the middle point of the rectange {:?} is {:?}",rectangle,middle_point)
-
+    assert_eq!(new_rectangle,rectangle);
 
 }
+
+
+
+

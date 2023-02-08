@@ -1,5 +1,4 @@
 use std::io::{Error, ErrorKind};
-use crate::communicate_to_vhdl::Communicator;
 use super::Vhdlizable;
 
 use num_traits::PrimInt;
@@ -45,7 +44,7 @@ impl<T: PrimInt + SignedDetector + std::fmt::Display> Vhdlizable for T{
 
         let mut mask = T::one();
 
-        for (i,n) in v.iter().enumerate(){
+        for n in v.iter(){
             if *n {
                 ret = ret + mask;
             }
@@ -62,7 +61,7 @@ impl<T: PrimInt + SignedDetector + std::fmt::Display> Vhdlizable for T{
             false => "unsigned"
         };
 
-        format!("{variable_name} <= {sign}(data_in({} downto {start_index}));\n",start_index+31)
+        format!("{variable_name} <= {sign}(data_in({} downto {start_index}));\n",start_index+Self::get_necessary_bits()-1)
     }
 
     fn get_vhd_declaration_code(variable_name: &str) -> String {
@@ -72,12 +71,12 @@ impl<T: PrimInt + SignedDetector + std::fmt::Display> Vhdlizable for T{
             false => "unsigned"
         };
 
-        format!("signal {variable_name}: {sign}(31 downto 0);\n")
+        format!("signal {variable_name}: {sign}({} downto 0);\n",Self::get_necessary_bits()-1)
     }
 
     fn get_vhd_deconstruction_code(variable_name: &str, start_index: usize) -> String {
 
-        format!("data_out({} downto {start_index}) <= std_logic_vector({variable_name});\n",start_index+31)
+        format!("data_out({} downto {start_index}) <= std_logic_vector({variable_name});\n",start_index+Self::get_necessary_bits()-1)
     }
 }
 
@@ -150,69 +149,4 @@ impl SignedDetector for usize {
     fn is_signed() -> bool {
         false
     }
-}
-
-
-
-
-
-#[test]
-fn test(){
-
-    use num_traits::PrimInt;
-
-    let n = 0xF00Du16;
-
-    fn print_second_bit<T: PrimInt>(dato: T){
-
-        let mask = T::one().rotate_left(1);
-
-        println!("{}",mask&dato != T::zero())
-
-    }
-
-    print_second_bit(10);
-
-
-}
-
-#[test]
-fn middle_point_test(){
-
-    #[derive(Vhdlizable,Debug)]
-    struct Point{
-        x: i32,
-        y: i32
-    }
-    impl Point{
-        fn new(x: i32,y: i32) -> Self{
-            Point{
-                x,
-                y
-            }
-        }
-    }
-
-    #[derive(Vhdlizable,Debug)]
-    struct Rectangle{
-        p1: Point,
-        p2: Point,
-    }
-
-    let rectangle = Rectangle{
-        p1: Point::new(0,0),
-        p2: Point::new(10,4)
-    };
-
-
-    //Communicator::<Rectangle,Point>::generate_vhdl_code();
-    //return;
-
-    let mut calcolate_middle_point = Communicator::<Rectangle,Point>::new_from_serial_port("COM5").unwrap();
-
-    let middle_point = calcolate_middle_point.calculate(rectangle).unwrap();
-
-    println!("the middle point of the rectange  is {:?}",middle_point)
-
-
 }

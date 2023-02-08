@@ -1,6 +1,5 @@
 use std::thread;
 use std::time::Duration;
-use rand::Rng;
 use serialport::SerialPort;
 use std::io::{Error,ErrorKind};
 use crate::uart_manager::sender_state_machine::{SenderStateMachine, SendResult};
@@ -139,6 +138,9 @@ impl UartManager{
 
 #[test]
 fn test_round_trip(){
+
+    use rand;
+    use rand::Rng;
 
     const BIT_TO_SEND: usize = 311;
 

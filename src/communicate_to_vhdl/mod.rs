@@ -132,3 +132,79 @@ impl<TypeIn: Vhdlizable, TypeOut: Vhdlizable> Communicator<TypeIn,TypeOut>{
     }
 
 }
+
+/*
+//for some reason this macro only works in niglty rust, and can't be created with a "repeatitive" structure otehrise
+// the compiler has some problem... so it works only with up to X parameters
+#[macro_export]
+/// allow to pass multiples value to the function
+macro_rules! compact {
+    ( $a:ident , $b:ident) => {
+        {
+            #[derive(Vhdlizable)]
+            struct Compact<A,B>{
+                $a: A,
+                $b: B
+            }
+
+            Compact{
+                $a: $a,
+                $b: $b
+            }
+        }
+    };
+    ( $a:ident , $b:ident ,  $c:ident , ) => {
+        {
+            #[derive(Vhdlizable,Debug)]
+            struct Compact<A,B,C>{
+                $a: A,
+                $b: B,
+                $c: C
+            }
+
+            Compact{
+                $a: $a,
+                $b: $b,
+                $c: $c
+            }
+        }
+    };
+        ( $a:ident , $b:ident ,  $c:ident , $d:ident , ) => {
+        {
+            #[derive(Vhdlizable,Debug)]
+            struct Compact<A,B,C,D>{
+                $a: A,
+                $b: B,
+                $c: C,
+                $d: D
+            }
+
+            Compact{
+                $a: $a,
+                $b: $b,
+                $c: $c,
+                $d: $d,
+            }
+        }
+    };
+    ( $a:ident , $b:ident ,  $c:ident , $d:ident , $e:ident , ) => {
+        {
+            #[derive(Vhdlizable,Debug)]
+            struct Compact<A,B,C,D,E>{
+                $a: A,
+                $b: B,
+                $c: C,
+                $d: D,
+                $e: E
+            }
+
+            Compact{
+                $a: $a,
+                $b: $b,
+                $c: $c,
+                $d: $d,
+                $e: $e,
+            }
+        }
+    };
+}*/
