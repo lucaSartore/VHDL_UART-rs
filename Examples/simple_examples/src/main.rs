@@ -12,7 +12,7 @@ fn main() {
 
     //assert_eq!(plus_one(100).unwrap(),101);
 
-    //assert_eq!(sum(100_000,334).unwrap(),100_223);
+    //assert_eq!(sum(100_000,334).unwrap(),100_334);
 
     assert_eq!(complex_struct().unwrap(),());
 
@@ -28,7 +28,7 @@ fn main() {
 fn plus_one(x: i32) -> Result<i32,Error>{
 
     // if you nead the sourcecode uncomment this line
-    let _ = Communicator::<i32,i32>::generate_vhdl_code()?;
+    //let _ = Communicator::<i32,i32>::generate_vhdl_code()?;
 
     let mut plus_one = Communicator::<i32,i32>::new_from_serial_port(USB_PORT)?;
 
@@ -49,7 +49,7 @@ fn sum(x1:u64, x2: u64) -> Result<u64,Error>{
 
     let mut sum = Communicator::<_,u64>::new_from_serial_port(USB_PORT)?;
 
-    sum.generate_vhdl_code_from_instance()?;
+    //sum.generate_vhdl_code_from_instance()?;
 
     //note: right now (fabruary 2023) the compact! macro works only in nigtly rust
     //if tou need to send many data without this macro you can create a struct and derive
@@ -108,7 +108,7 @@ fn complex_struct() -> Result<(),Error>{
 
     let mut sum = Communicator::<Triangle,Triangle>::new_from_serial_port(USB_PORT)?;
 
-    sum.generate_vhdl_code_from_instance()?;
+    //sum.generate_vhdl_code_from_instance()?;
 
     let new_t = sum.calculate(&t)?;
 
