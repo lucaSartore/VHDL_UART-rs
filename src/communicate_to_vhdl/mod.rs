@@ -115,6 +115,25 @@ impl<TypeIn: Vhdlizable, TypeOut: Vhdlizable> Communicator<TypeIn,TypeOut>{
         Result::Ok(())
     }
 
+    /// generate the code of the VHDL calculator
+    pub fn generate_vhdl_code_from_instance(&self) -> Result<(),Error>{
+        use functions::generate_vhd_communicator;
+        generate_vhd_communicator(
+            TypeIn::get_necessary_bits(),
+            TypeOut::get_necessary_bits(),
+            TypeIn::get_vhd_declaration_code("input"),
+            TypeOut::get_vhd_declaration_code("output"),
+            TypeIn::get_vhd_construction_code("input",0),
+            TypeOut::get_vhd_deconstruction_code("output",0)
+        )?;
+
+        println!("the file has ben generated correctly!");
+        println!();
+        println!("you can find the other files available at: https://github.com/lucaSartore/VHDL_UART-rs/tree/main/vhdl_sources");
+
+        Result::Ok(())
+    }
+
     /// calculate some data on the vhdl board
     pub fn calculate(&mut self, input: &TypeIn) -> Result<TypeOut,Error>{
 

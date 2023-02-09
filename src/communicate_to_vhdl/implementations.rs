@@ -150,3 +150,28 @@ impl SignedDetector for usize {
         false
     }
 }
+
+
+impl Vhdlizable for bool {
+    fn construct_from_bits(data: &[bool]) -> Result<Self, Error> where Self: Sized {
+        if data.len() != Self::get_necessary_bits(){
+            return Err(Error::new(ErrorKind::Other, "Length of input incompatible with length of output"));
+        };
+        Ok(data[0])
+    }
+    fn get_bit_representation(&self) -> Vec<bool> {
+        vec![*self]
+    }
+    fn get_necessary_bits() -> usize {
+        1
+    }
+    fn get_vhd_construction_code(variable_name: &str, start_index: usize) -> String {
+        format!("{variable_name} <= data_in({start_index});\n")
+    }
+    fn get_vhd_declaration_code(variable_name: &str) -> String {
+        format!("signal {variable_name}: std_logic;\n")
+    }
+    fn get_vhd_deconstruction_code(variable_name: &str, start_index: usize) -> String {
+        format!("data_out({start_index}) <= {variable_name};\n")
+    }
+}
