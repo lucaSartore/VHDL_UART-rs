@@ -56,14 +56,14 @@ architecture Behavioral of Comunicator is
 
     -- inputs
     signal input_point_1_x: signed(31 downto 0);
-signal input_point_1_y: signed(31 downto 0);
-signal input_point_2_x: signed(31 downto 0);
-signal input_point_2_y: signed(31 downto 0);
-signal input_point_3_x: signed(31 downto 0);
-signal input_point_3_y: signed(31 downto 0);
-signal input_fill_color_red: unsigned(7 downto 0);
-signal input_fill_color_green: unsigned(7 downto 0);
-signal input_fill_color_blue: unsigned(7 downto 0);
+    signal input_point_1_y: signed(31 downto 0);
+    signal input_point_2_x: signed(31 downto 0);
+    signal input_point_2_y: signed(31 downto 0);
+    signal input_point_3_x: signed(31 downto 0);
+    signal input_point_3_y: signed(31 downto 0);
+    signal input_fill_color_red: unsigned(7 downto 0);
+    signal input_fill_color_green: unsigned(7 downto 0);
+    signal input_fill_color_blue: unsigned(7 downto 0);
 
 
     --output

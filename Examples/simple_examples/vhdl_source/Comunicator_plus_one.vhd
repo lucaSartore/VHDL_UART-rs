@@ -56,8 +56,6 @@ architecture Behavioral of Comunicator is
 
     -- inputs
     signal input: signed(31 downto 0);
-
-
     --output
     signal output: signed(31 downto 0);
 
@@ -156,8 +154,6 @@ begin
 
     --constructing inputs
     input <= signed(data_in(31 downto 0));
-
-
     --deconstruction outputs
     data_out(31 downto 0) <= std_logic_vector(output);
 
