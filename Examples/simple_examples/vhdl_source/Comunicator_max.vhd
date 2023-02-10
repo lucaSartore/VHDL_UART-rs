@@ -7,10 +7,10 @@ use IEEE.numeric_std .ALL;
 entity Comunicator is
 Generic(
     -- the ammount of bit to recive
-    RECIVING_SIZE: integer := 216;
+    RECIVING_SIZE: integer := 96;
 
     -- the ammount of bit to recive
-    SENDING_SIZE: integer := 216;
+    SENDING_SIZE: integer := 32;
 
     -- the numer of clock cicle the macine wait before sending the data back
     CLOCK_REPLYING_TIMER: integer := 1000
@@ -55,27 +55,13 @@ architecture Behavioral of Comunicator is
     signal second_reset:  std_logic := '1';
 
     -- inputs
-    signal input_point_1_x: signed(31 downto 0);
-signal input_point_1_y: signed(31 downto 0);
-signal input_point_2_x: signed(31 downto 0);
-signal input_point_2_y: signed(31 downto 0);
-signal input_point_3_x: signed(31 downto 0);
-signal input_point_3_y: signed(31 downto 0);
-signal input_fill_color_red: unsigned(7 downto 0);
-signal input_fill_color_green: unsigned(7 downto 0);
-signal input_fill_color_blue: unsigned(7 downto 0);
+    signal input_n1: signed(31 downto 0);
+signal input_n2: signed(31 downto 0);
+signal input_n3: signed(31 downto 0);
 
 
     --output
-    signal output_point_1_x: signed(31 downto 0);
-signal output_point_1_y: signed(31 downto 0);
-signal output_point_2_x: signed(31 downto 0);
-signal output_point_2_y: signed(31 downto 0);
-signal output_point_3_x: signed(31 downto 0);
-signal output_point_3_y: signed(31 downto 0);
-signal output_fill_color_red: unsigned(7 downto 0);
-signal output_fill_color_green: unsigned(7 downto 0);
-signal output_fill_color_blue: unsigned(7 downto 0);
+    signal output: signed(31 downto 0);
 
 
 begin
@@ -171,40 +157,17 @@ begin
     end process;
 
     --constructing inputs
-    input_point_1_x <= signed(data_in(31 downto 0));
-    input_point_1_y <= signed(data_in(63 downto 32));
-    input_point_2_x <= signed(data_in(95 downto 64));
-    input_point_2_y <= signed(data_in(127 downto 96));
-    input_point_3_x <= signed(data_in(159 downto 128));
-    input_point_3_y <= signed(data_in(191 downto 160));
-    input_fill_color_red <= unsigned(data_in(199 downto 192));
-    input_fill_color_green <= unsigned(data_in(207 downto 200));
-    input_fill_color_blue <= unsigned(data_in(215 downto 208));
+    input_n1 <= signed(data_in(31 downto 0));
+input_n2 <= signed(data_in(63 downto 32));
+input_n3 <= signed(data_in(95 downto 64));
 
 
     --deconstruction outputs
-    data_out(31 downto 0) <= std_logic_vector(output_point_1_x);
-    data_out(63 downto 32) <= std_logic_vector(output_point_1_y);
-    data_out(95 downto 64) <= std_logic_vector(output_point_2_x);
-    data_out(127 downto 96) <= std_logic_vector(output_point_2_y);
-    data_out(159 downto 128) <= std_logic_vector(output_point_3_x);
-    data_out(191 downto 160) <= std_logic_vector(output_point_3_y);
-    data_out(199 downto 192) <= std_logic_vector(output_fill_color_red);
-    data_out(207 downto 200) <= std_logic_vector(output_fill_color_green);
-    data_out(215 downto 208) <= std_logic_vector(output_fill_color_blue);
+    data_out(31 downto 0) <= std_logic_vector(output);
 
-
-
+    
     --      INSERT HERE YOUR VHDL CODE
-    output_point_1_x            <= input_point_1_x;
-    output_point_1_y            <= input_point_1_y;
-    output_point_2_x            <= input_point_2_x;
-    output_point_2_y            <= input_point_2_y;
-    output_point_3_x            <= input_point_3_x;
-    output_point_3_y            <= input_point_3_y;
-    output_fill_color_red       <= input_fill_color_red;
-    output_fill_color_green     <= input_fill_color_green;
-    output_fill_color_blue      <= input_fill_color_blue;
+    output <= input_n1 when input_n1 >= input_n2 and input_n1 >= input_n3 else input_n2 when input_n2 >= input_n3 else input_n3;
 
 
 end Behavioral;

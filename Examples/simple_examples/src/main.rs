@@ -10,9 +10,11 @@ pub const USB_PORT: &str = "COM5";
 
 fn main() {
 
-    //assert_eq!(plus_one(100).unwrap(),101);
+    assert_eq!(plus_one(100).unwrap(),101);
 
-    //assert_eq!(sum(100_000,334).unwrap(),100_334);
+    assert_eq!(sum(100_000,334).unwrap(),100_334);
+
+    assert_eq!(max(10456,25544,1000).unwrap(),25544);
 
     assert_eq!(complex_struct().unwrap(),());
 
@@ -45,8 +47,6 @@ fn plus_one(x: i32) -> Result<i32,Error>{
 //
 // to the VHDL generated code
 fn sum(x1:u64, x2: u64) -> Result<u64,Error>{
-
-
     let mut sum = Communicator::<_,u64>::new_from_serial_port(USB_PORT)?;
 
     //sum.generate_vhdl_code_from_instance()?;
@@ -55,6 +55,28 @@ fn sum(x1:u64, x2: u64) -> Result<u64,Error>{
     //if tou need to send many data without this macro you can create a struct and derive
     //the Vhdlizable trait (see example bellow)
     let result = sum.calculate(&compact!(x1,x2))?;
+
+    return Ok(result);
+}
+
+
+/// this function find the max value of 3 numbers
+// remember to add:
+//
+//      output <= input_x1+input_x2;
+//
+// to the VHDL generated code
+fn max(n1: i32, n2: i32, n3: i32) -> Result<i32,Error>{
+
+
+    let mut max = Communicator::<_,i32>::new_from_serial_port(USB_PORT)?;
+
+    //max.generate_vhdl_code_from_instance()?;
+
+    //note: right now (fabruary 2023) the compact! macro works only in nigtly rust
+    //if tou need to send many data without this macro you can create a struct and derive
+    //the Vhdlizable trait (see example bellow)
+    let result = max.calculate(&compact!(n1,n2,n3))?;
 
     return Ok(result);
 }
@@ -100,6 +122,8 @@ fn complex_struct() -> Result<(),Error>{
         fill_color: Color
     }
 
+    //Communicator::<Triangle,Triangle>::generate_vhdl_code();
+
     let mut t = Triangle::default();
     t.point_2.y = 10;
     t.point_3.x = -4;
@@ -107,8 +131,6 @@ fn complex_struct() -> Result<(),Error>{
 
 
     let mut sum = Communicator::<Triangle,Triangle>::new_from_serial_port(USB_PORT)?;
-
-    //sum.generate_vhdl_code_from_instance()?;
 
     let new_t = sum.calculate(&t)?;
 
@@ -137,7 +159,7 @@ macro_rules! compact {
             }
         }
     };
-    ( $a:ident , $b:ident ,  $c:ident , ) => {
+    ( $a:ident , $b:ident ,  $c:ident) => {
         {
             #[derive(Vhdlizable,Debug)]
             struct Compact<A,B,C>{
@@ -153,7 +175,7 @@ macro_rules! compact {
             }
         }
     };
-        ( $a:ident , $b:ident ,  $c:ident , $d:ident , ) => {
+        ( $a:ident , $b:ident ,  $c:ident , $d:ident) => {
         {
             #[derive(Vhdlizable,Debug)]
             struct Compact<A,B,C,D>{
