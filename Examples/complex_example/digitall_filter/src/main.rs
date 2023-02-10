@@ -38,7 +38,7 @@ fn main() {
 
 
 #[test]
-fn test_time_single_core(){
+fn test_time_cpu_performance(){
 
     let image_og = open("..\\test1.jpg").unwrap().resize_exact(RES_X as u32, RES_Y as u32,  image::imageops::FilterType::Nearest);
 
