@@ -3,6 +3,8 @@ use std::io::{Error, ErrorKind};
 use vhdl_uart_rs::communicate_to_vhdl::Vhdlizable;
 use crate::{RES_X, RES_Y};
 use image::{DynamicImage, GenericImage, GenericImageView, Rgba};
+use std::time;
+
 
 #[derive(Vhdlizable,Default,Clone,Copy,Debug,PartialEq)]
 pub struct Color{
@@ -35,24 +37,27 @@ impl Image<Color>{
             return None;
         }
 
-        for x in 0..RES_X{
-            for y in 0..RES_Y{
 
+        for x in 0..RES_X {
+            for y in 0..RES_Y {
                 let pixel = mat.get_pixel(x as u32, y as u32);
                 let r = pixel.0[0];
                 let g = pixel.0[1];
                 let b = pixel.0[2];
 
                 image.image[x as usize][y as usize] = Color::new(
-                    r,g,b
+                    r, g, b
                 )
-
             }
         }
+
         Option::Some(image)
     }
     pub fn to_gray_image(&self,) -> Image<Gray>{
+
         let mut image = Image::<Gray>::default();
+
+
 
         for x in 0..RES_X{
             for y in 0..RES_Y{
@@ -67,6 +72,74 @@ impl Image<Color>{
                 image.image[x][y].gray = max
             }
         }
+        image
+    }
+}
+
+impl Image<Color> {
+    pub fn test_conversion_single_core(& self) -> Image<Gray>{
+        let begin = time::Instant::now();
+
+        let mut image= Image::<Gray>::default();
+
+        use rayon::prelude::*;
+
+        for _ in 0..1000{
+
+            image = Image::<Gray>::default();
+
+            for x in 0..RES_X{
+                for y in 0..RES_Y{
+                    let pixel = &self.image[x][y];
+                    let max = pixel.g.max(pixel.b.max(pixel.r));
+                    image.image[x][y].gray = max;
+                }
+            }
+
+
+            // for (x,colum) in image.image.iter_mut().enumerate(){
+            //     for (y,gray) in colum.iter_mut().enumerate(){
+            //         let pixel = &self.image[x][y];
+            //         let max = pixel.g.max(pixel.b.max(pixel.r));
+            //         gray.gray = max;
+            //     }
+            // }
+        }
+
+        let end  = time::Instant::now();
+
+        println!("the time it takes ot convert an image in single core is: {:?}", (end-begin)/1000);
+
+        image
+    }
+
+    pub fn test_conversion_multi_core(& self) -> Image<Gray>{
+
+        use rayon::prelude::*;
+
+        let begin = time::Instant::now();
+
+        let mut image = Image::<Gray>::default();
+
+
+        for _ in 0..1000{
+
+            image = Image::<Gray>::default();
+
+            image.image.par_iter_mut().enumerate().for_each(|(x,colun)|{
+                colun.iter_mut().enumerate().for_each(|(y,val)|{
+                    let pixel = &self.image[x][y];
+                    let max = pixel.g.max(pixel.b.max(pixel.r));
+                    val.gray = max;
+                });
+            });
+
+        }
+
+        let end  = time::Instant::now();
+
+        println!("the time it takes ot convert an image in single core is: {:?}", (end-begin)/1000);
+
         image
     }
 }
