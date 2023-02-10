@@ -4,8 +4,8 @@ use util::Image;
 use image::open;
 use crate::util::{Color, Gray};
 
-pub const RES_X: usize = 300;
-pub const RES_Y: usize = 300;
+pub const RES_X: usize = 8;
+pub const RES_Y: usize = 8;
 
 #[allow(dead_code)]
 mod util;
@@ -21,18 +21,18 @@ fn main() {
     // return;
 
     //
-    // let mut to_gray = Communicator::<Image<Color>,Image<Gray>>::new_from_serial_port("COM5").unwrap();
+    let mut to_gray = Communicator::<Image<Color>,Image<Gray>>::new_from_serial_port("COM5").unwrap();
     //
-    // let gray_image = to_gray.calculate(&color_image).unwrap();
+    let gray_image = to_gray.calculate(&color_image).unwrap();
 
     let gray_image_control = color_image.to_gray_image();
 
-    // assert_eq!(gray_image,gray_image_control);
-    // println!("the 2 images where exactly equal!");
+    assert_eq!(gray_image,gray_image_control);
+    println!("the 2 images where exactly equal!");
     //
-    // let final_image = gray_image.to_image();
+    let final_image = gray_image.to_image();
     //
-    // final_image.save("..\\result.jpg").unwrap();
+    final_image.save("..\\result.jpg").unwrap();
 
 }
 
